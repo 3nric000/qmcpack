@@ -5,10 +5,12 @@ echo '  To build qmcpack, cmake, lapack/blas, hdf5 and boost are required.'
 echo '  Check http://www.qmcpack.org'
 echo
 
+currDir=`pwd` ;
+
 tcmake=`which cmake`
 if test $tcmake; then
-  echo '  cd build; cmake ..; make'
-  cd build; cmake ..; make
+  echo '  cd build; cmake3 ..; make'
+  mkdir ./build ; cd build ; cmake -DQMC_DATA=${currDir}/tests/performance/NiO/data -DENABLE_TIMERS=1 .. ; make qmcpack -j ;
 else
   echo 
   echo '  cmake is not found. Get cmake at http://www.cmake.org/'
