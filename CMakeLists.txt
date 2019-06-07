@@ -1,5 +1,6 @@
 PROJECT(qmcpack)
 
+SET(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 #####################################################
 CMAKE_MINIMUM_REQUIRED(VERSION 3.6.0)

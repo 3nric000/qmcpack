@@ -10,7 +10,11 @@ currDir=`pwd` ;
 tcmake=`which cmake`
 if test $tcmake; then
   echo '  cd build; cmake3 ..; make'
-  mkdir ./build ; cd build ; cmake -DQMC_DATA=${currDir}/tests/performance/NiO/data -DENABLE_TIMERS=1 .. ; make qmcpack -j ;
+  rm -r ./build ;
+  mkdir ./build ;
+  cd build ;
+  cmake -DQMC_DATA=${currDir}/tests/performance/NiO/data -DENABLE_TIMERS=1 .. ;
+  make qmcpack -j ;
 else
   echo 
   echo '  cmake is not found. Get cmake at http://www.cmake.org/'
