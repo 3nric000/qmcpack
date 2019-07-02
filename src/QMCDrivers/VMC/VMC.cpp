@@ -16,6 +16,7 @@
 //////////////////////////////////////////////////////////////////////////////////////
 
 
+#include "State.h" // ED
 #include "QMCDrivers/VMC/VMC.h"
 #include "QMCDrivers/VMC/VMCUpdatePbyP.h"
 #include "QMCDrivers/VMC/VMCUpdateAll.h"
@@ -42,6 +43,7 @@ VMC::VMC(MCWalkerConfiguration& w,
          Communicate* comm)
     : QMCDriver(w, psi, h, ppool, comm), UseDrift("yes")
 {
+  app_log() << "ED: VMC" << std::endl; // ED
   RootName = "vmc";
   QMCType  = "VMC";
   QMCDriverMode.set(QMC_UPDATE_MODE, 1);
@@ -69,13 +71,22 @@ bool VMC::run()
   RunTimeControl runtimeControl(RunTimeManager, MaxCPUSecs);
   bool enough_time_for_next_iteration = true;
 
+  app_log() << "ED: nBlocks = " << nBlocks << std::endl; // ED
+  app_log() << "ED: nSteps = " << nSteps << std::endl; // ED
+  app_log() << "ED: NumThreads = " << NumThreads << std::endl; // ED
+
   const bool has_collectables = W.Collectables.size();
+
+  State state(W); // ED
+
   for (int block = 0; block < nBlocks; ++block)
   {
+
     vmc_loop.start();
 #pragma omp parallel
     {
       int ip = omp_get_thread_num();
+      app_log() << "ED: ip = " << ip << std::endl; // ED
       //IndexType updatePeriod=(QMCDriverMode[QMC_UPDATE_MODE])?Period4CheckProperties:(nBlocks+1)*nSteps;
       IndexType updatePeriod = (QMCDriverMode[QMC_UPDATE_MODE]) ? Period4CheckProperties : 0;
       //assign the iterators and resuse them
