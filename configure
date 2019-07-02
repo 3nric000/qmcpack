@@ -13,8 +13,9 @@ if test $tcmake; then
   rm -r ./build ;
   mkdir ./build ;
   cd build ;
+  export CXX=clang++ ;
   cmake -DQMC_DATA=${currDir}/tests/performance/NiO/data -DENABLE_TIMERS=1 .. ;
-  make qmcpack -j ;
+  make -j ;
 else
   echo 
   echo '  cmake is not found. Get cmake at http://www.cmake.org/'
