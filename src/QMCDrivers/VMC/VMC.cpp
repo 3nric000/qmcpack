@@ -90,7 +90,7 @@ bool VMC::run()
       //IndexType updatePeriod=(QMCDriverMode[QMC_UPDATE_MODE])?Period4CheckProperties:(nBlocks+1)*nSteps;
       IndexType updatePeriod = (QMCDriverMode[QMC_UPDATE_MODE]) ? Period4CheckProperties : 0;
       //assign the iterators and resuse them
-      MCWalkerConfiguration::iterator wit(W.begin() + wPerNode[ip]), wit_end(W.begin() + wPerNode[ip + 1]);
+      MCWalkerConfiguration::iterator wit(state.W.begin() + wPerNode[ip]), wit_end(state.W.begin() + wPerNode[ip + 1]);
       Movers[ip]->startBlock(nSteps);
       int now_loc    = CurrentStep;
       RealType cnorm = 1.0 / static_cast<RealType>(wPerNode[ip + 1] - wPerNode[ip]);
@@ -130,6 +130,7 @@ bool VMC::run()
       break;
     }
   } //block
+  app_log() << "ED: ENDBLOCK" << std::endl; // ED
   Estimators->stop(estimatorClones);
   for (int ip = 0; ip < NumThreads; ++ip)
     Movers[ip]->stopRun2();
@@ -145,7 +146,7 @@ bool VMC::run()
   bool wrotesamples = DumpConfig;
   if (DumpConfig)
   {
-    wrotesamples = W.dumpEnsemble(wClones, wOut, myComm->size(), nBlocks);
+    wrotesamples = state.W.dumpEnsemble(wClones, wOut, myComm->size(), nBlocks);
     if (wrotesamples)
       app_log() << "  samples are written to the config.h5" << std::endl;
   }
