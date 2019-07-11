@@ -16,7 +16,7 @@
 //////////////////////////////////////////////////////////////////////////////////////
 
 
-#include "State.h" // ED
+#include "StateVMC.h" // ED
 #include "QMCDrivers/VMC/VMC.h"
 #include "QMCDrivers/VMC/VMCUpdatePbyP.h"
 #include "QMCDrivers/VMC/VMCUpdateAll.h"
@@ -58,6 +58,9 @@ VMC::VMC(MCWalkerConfiguration& w,
 
 bool VMC::run()
 {
+  //omp_set_dynamic(0); // ED
+  //omp_set_num_threads(1); // ED
+
   resetRun();
   //start the main estimator
   Estimators->start(nBlocks);
@@ -74,10 +77,11 @@ bool VMC::run()
   app_log() << "ED: nBlocks = " << nBlocks << std::endl; // ED
   app_log() << "ED: nSteps = " << nSteps << std::endl; // ED
   app_log() << "ED: NumThreads = " << NumThreads << std::endl; // ED
+  app_log() << "ED: W.WalkerList.size() = " << W.WalkerList.size() << std::endl; // ED
 
   const bool has_collectables = W.Collectables.size();
 
-  State state(W); // ED
+  StateVMC state(W); // ED
 
   for (int block = 0; block < nBlocks; ++block)
   {
@@ -86,7 +90,7 @@ bool VMC::run()
 #pragma omp parallel
     {
       int ip = omp_get_thread_num();
-      app_log() << "ED: ip = " << ip << std::endl; // ED
+      //app_log() << "ED: ip = " << ip << std::endl; // ED
       //IndexType updatePeriod=(QMCDriverMode[QMC_UPDATE_MODE])?Period4CheckProperties:(nBlocks+1)*nSteps;
       IndexType updatePeriod = (QMCDriverMode[QMC_UPDATE_MODE]) ? Period4CheckProperties : 0;
       //assign the iterators and resuse them

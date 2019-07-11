@@ -114,7 +114,13 @@ ParticleSet::ParticleSet(const ParticleSet& p)
 ParticleSet::~ParticleSet()
 {
   DEBUG_MEMORY("ParticleSet::~ParticleSet");
-  delete_iter(DistTables.begin(), DistTables.end());
+  // ED
+  for (auto i = 0; i < DistTables.size(); ++i){
+    //delete DistTables[i];
+  }
+  DistTables.clear();
+  //delete_iter(DistTables.begin(), DistTables.end());
+  
   if (SK)
     delete SK;
 }
