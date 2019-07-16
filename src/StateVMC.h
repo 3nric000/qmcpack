@@ -4,6 +4,7 @@
 //#include "QMCDrivers/QMCDriver.h"
 //#include "QMCDrivers/CloneManager.h"
 #include "Particle/MCWalkerConfiguration.h"
+#include "QMCDrivers/QMCUpdateBase.h"
 
 namespace qmcplusplus
 {
@@ -16,9 +17,10 @@ class StateVMC
 
   typedef MCWalkerConfiguration::Walker_t Walker_t;
   typedef MCWalkerConfiguration::WalkerList_t WalkerList_t;
-  //typedef std::vector<Walker_t*> WalkerList_t;
+  //typedef std::vector< Walker_t* > WalkerList_t;
 
   MCWalkerConfiguration W;
+  std::vector< QMCUpdateBase* > Movers;
 
   StateVMC(const MCWalkerConfiguration &W){
     this->W = MCWalkerConfiguration(W);
@@ -38,6 +40,12 @@ class StateVMC
     }
 
     return WalkerListLocal;
+  };
+
+  StateVMC* clone(void){
+    StateVMC *clonedState = new StateVMC(this->W);
+
+    return clonedState;
   };
 
 };
