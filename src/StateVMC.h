@@ -21,10 +21,12 @@ class StateVMC
 
   MCWalkerConfiguration W;
   std::vector< QMCUpdateBase* > Movers;
+  std::vector<int> wPerNode;
 
-  StateVMC(const MCWalkerConfiguration &W){
+  StateVMC(const MCWalkerConfiguration &W, std::vector< int > &wPerNode){
     this->W = MCWalkerConfiguration(W);
     this->W.WalkerList = cloneWalkerList(W.WalkerList);
+    this->wPerNode = wPerNode;
   };
 
   ~StateVMC(){
@@ -43,7 +45,7 @@ class StateVMC
   };
 
   StateVMC* clone(void){
-    StateVMC *clonedState = new StateVMC(this->W);
+    StateVMC *clonedState = new StateVMC(this->W, this->wPerNode);
 
     return clonedState;
   };

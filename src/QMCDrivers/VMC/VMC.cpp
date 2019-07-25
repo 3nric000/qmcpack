@@ -81,7 +81,7 @@ bool VMC::run()
 
   const bool has_collectables = W.Collectables.size();
 
-  StateVMC state(W); // ED
+  StateVMC state(W, wPerNode); // ED
 
   for (int block = 0; block < nBlocks; ++block)
   {
@@ -94,10 +94,10 @@ bool VMC::run()
       //IndexType updatePeriod=(QMCDriverMode[QMC_UPDATE_MODE])?Period4CheckProperties:(nBlocks+1)*nSteps;
       IndexType updatePeriod = (QMCDriverMode[QMC_UPDATE_MODE]) ? Period4CheckProperties : 0;
       //assign the iterators and resuse them
-      MCWalkerConfiguration::iterator wit(state.W.begin() + wPerNode[ip]), wit_end(state.W.begin() + wPerNode[ip + 1]);
+      MCWalkerConfiguration::iterator wit(state.W.begin() + state.wPerNode[ip]), wit_end(state.W.begin() + state.wPerNode[ip + 1]);
       Movers[ip]->startBlock(nSteps);
       int now_loc    = CurrentStep;
-      RealType cnorm = 1.0 / static_cast<RealType>(wPerNode[ip + 1] - wPerNode[ip]);
+      RealType cnorm = 1.0 / static_cast<RealType>(state.wPerNode[ip + 1] - state.wPerNode[ip]);
       for (int step = 0; step < nSteps; ++step)
       {
         Movers[ip]->set_step(now_loc);
