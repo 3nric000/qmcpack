@@ -81,7 +81,7 @@ bool VMC::run()
 
   const bool has_collectables = W.Collectables.size();
 
-  StateVMC state(W, wPerNode); // ED
+  StateVMC state(NumThreads, nSubSteps, W, wPerNode, Estimators, &Psi, &H, Traces, QMCDriverMode); // ED
 
   for (int block = 0; block < nBlocks; ++block)
   {
@@ -92,36 +92,36 @@ bool VMC::run()
       int ip = omp_get_thread_num();
       //app_log() << "ED: ip = " << ip << std::endl; // ED
       //IndexType updatePeriod=(QMCDriverMode[QMC_UPDATE_MODE])?Period4CheckProperties:(nBlocks+1)*nSteps;
-      IndexType updatePeriod = (QMCDriverMode[QMC_UPDATE_MODE]) ? Period4CheckProperties : 0;
+      IndexType updatePeriod = (state.QMCDriverMode[QMC_UPDATE_MODE]) ? Period4CheckProperties : 0;
       //assign the iterators and resuse them
       MCWalkerConfiguration::iterator wit(state.W.begin() + state.wPerNode[ip]), wit_end(state.W.begin() + state.wPerNode[ip + 1]);
-      Movers[ip]->startBlock(nSteps);
+      state.Movers[ip]->startBlock(nSteps);
       int now_loc    = CurrentStep;
       RealType cnorm = 1.0 / static_cast<RealType>(state.wPerNode[ip + 1] - state.wPerNode[ip]);
       for (int step = 0; step < nSteps; ++step)
       {
-        Movers[ip]->set_step(now_loc);
+        state.Movers[ip]->set_step(now_loc);
         //collectables are reset, it is accumulated while advancing walkers
-        wClones[ip]->resetCollectables();
+        state.wClones[ip]->resetCollectables();
         bool recompute = (nBlocksBetweenRecompute && (step + 1) == nSteps &&
-                          (1 + block) % nBlocksBetweenRecompute == 0 && QMCDriverMode[QMC_UPDATE_MODE]);
-        Movers[ip]->advanceWalkers(wit, wit_end, recompute);
+                          (1 + block) % nBlocksBetweenRecompute == 0 && state.QMCDriverMode[QMC_UPDATE_MODE]);
+        state.Movers[ip]->advanceWalkers(wit, wit_end, recompute);
         if (has_collectables)
-          wClones[ip]->Collectables *= cnorm;
-        Movers[ip]->accumulate(wit, wit_end);
+          state.wClones[ip]->Collectables *= cnorm;
+        state.Movers[ip]->accumulate(wit, wit_end);
         ++now_loc;
         if (Period4WalkerDump && now_loc % Period4WalkerDump == 0)
-          wClones[ip]->saveEnsemble(wit, wit_end);
+          state.wClones[ip]->saveEnsemble(wit, wit_end);
         //           if(storeConfigs && (now_loc%storeConfigs == 0))
         //             ForwardWalkingHistory.storeConfigsForForwardWalking(*wClones[ip]);
       }
-      Movers[ip]->stopBlock(false);
+      state.Movers[ip]->stopBlock(false);
     } //end-of-parallel for
     //Estimators->accumulateCollectables(wClones,nSteps);
     CurrentStep += nSteps;
-    Estimators->stopBlock(estimatorClones);
+    state.Estimators->stopBlock(estimatorClones);
 #if !defined(REMOVE_TRACEMANAGER)
-    Traces->write_buffers(traceClones, block);
+    state.Traces->write_buffers(traceClones, block);
 #endif
     if (storeConfigs)
       recordBlock(block);
@@ -135,22 +135,22 @@ bool VMC::run()
     }
   } //block
   app_log() << "ED: ENDBLOCK" << std::endl; // ED
-  Estimators->stop(estimatorClones);
+  state.Estimators->stop(estimatorClones);
   for (int ip = 0; ip < NumThreads; ++ip)
-    Movers[ip]->stopRun2();
+    state.Movers[ip]->stopRun2();
 #if !defined(REMOVE_TRACEMANAGER)
-  Traces->stopRun();
+  state.Traces->stopRun();
 #endif
   //copy back the random states
 #ifndef USE_FAKE_RNG
   for (int ip = 0; ip < NumThreads; ++ip)
-    *(RandomNumberControl::Children[ip]) = *(Rng[ip]);
+    *(RandomNumberControl::Children[ip]) = *(state.Rng[ip]);
 #endif
   ///write samples to a file
   bool wrotesamples = DumpConfig;
   if (DumpConfig)
   {
-    wrotesamples = state.W.dumpEnsemble(wClones, wOut, myComm->size(), nBlocks);
+    wrotesamples = state.W.dumpEnsemble(state.wClones, wOut, myComm->size(), nBlocks);
     if (wrotesamples)
       app_log() << "  samples are written to the config.h5" << std::endl;
   }
